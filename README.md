@@ -35,6 +35,28 @@ npm install
 npm run dev
 ```
 
+### Configurable ICP / 公网安备 备案号
+
+The footer of the site can display registration numbers. Set the following environment variables (e.g. in a `.env` file at the project root) before building:
+
+```env
+VITE_ICP_NUMBER=2026005080      # example value without the “京ICP备” prefix
+VITE_PUBLIC_SECURITY_NUMBER=11010702003005
+```
+
+These values will be injected at build time, and the footer component will only render if at least one is defined.
+
+> **Note:** do **not** commit your `.env` file to version control. It is already included in `.gitignore` by default.
+
+By default the numbers are wrapped with links to the official record search pages and open in a new tab. You can override the URL templates using:
+
+```env
+VITE_ICP_LINK=https://some.site/lookup?code={number}
+VITE_PUBLIC_SECURITY_LINK=https://another.site/records/{number}
+```
+
+The `{number}` placeholder will be replaced with the actual registration value.
+
 ### Type-Check, Compile and Minify for Production
 
 ```sh

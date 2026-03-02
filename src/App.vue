@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import { ref } from 'vue'
+import { RouterLink, RouterView } from "vue-router";
+import { ref } from "vue";
+import Footer from "./components/Footer.vue";
 
-const menuOpen = ref(false)
+const menuOpen = ref(false);
 
 const toggleMenu = () => {
-  menuOpen.value = !menuOpen.value
-}
+  menuOpen.value = !menuOpen.value;
+};
 
 const closeMenu = () => {
-  menuOpen.value = false
-}
+  menuOpen.value = false;
+};
 </script>
 
 <template>
@@ -21,7 +22,12 @@ const closeMenu = () => {
           <span class="brand-icon">🛠️</span>
           <span class="brand-text">DevTools</span>
         </RouterLink>
-        <button class="menu-toggle" @click="toggleMenu" :class="{ active: menuOpen }" aria-label="菜单">
+        <button
+          class="menu-toggle"
+          @click="toggleMenu"
+          :class="{ active: menuOpen }"
+          aria-label="菜单"
+        >
           <span></span>
           <span></span>
           <span></span>
@@ -46,10 +52,16 @@ const closeMenu = () => {
         </div>
       </div>
     </nav>
-    <div class="menu-overlay" :class="{ active: menuOpen }" @click="closeMenu"></div>
+    <div
+      class="menu-overlay"
+      :class="{ active: menuOpen }"
+      @click="closeMenu"
+    ></div>
     <main class="main-content">
       <RouterView />
     </main>
+    <!-- site footer with configurable ICP / 公网安备 numbers -->
+    <Footer />
   </div>
 </template>
 
@@ -60,14 +72,17 @@ const closeMenu = () => {
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
   overflow-x: hidden;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
   background: linear-gradient(135deg, #f1f5f9 0%, #e0e7ff 100%);
   color: #1e293b;
   line-height: 1.6;
@@ -84,7 +99,12 @@ body {
   width: 100%;
   min-height: 100vh;
   display: flex;
-  flex-direction: column; 
+  flex-direction: column;
+}
+
+/* ensure footer sits at bottom when content is short */
+.main-content {
+  flex: 1;
 }
 
 .navbar {
@@ -184,13 +204,21 @@ body {
 
 .nav-link.router-link-exact-active {
   color: #6366f1;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.1),
+    rgba(139, 92, 246, 0.1)
+  );
   font-weight: 600;
 }
 
 @media (prefers-color-scheme: dark) {
   .nav-link.router-link-exact-active {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+    background: linear-gradient(
+      135deg,
+      rgba(99, 102, 241, 0.2),
+      rgba(139, 92, 246, 0.2)
+    );
   }
 }
 
@@ -297,7 +325,8 @@ body {
   }
 
   @keyframes pulse {
-    0%, 100% {
+    0%,
+    100% {
       transform: scale(1);
     }
     50% {
@@ -331,7 +360,11 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.98) 0%,
+      rgba(248, 250, 252, 0.98) 100%
+    );
     backdrop-filter: blur(20px);
     flex-direction: column;
     align-items: stretch;
@@ -345,7 +378,11 @@ body {
 
   @media (prefers-color-scheme: dark) {
     .nav-links {
-      background: linear-gradient(180deg, rgba(30, 41, 59, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%);
+      background: linear-gradient(
+        180deg,
+        rgba(30, 41, 59, 0.98) 0%,
+        rgba(15, 23, 42, 0.98) 100%
+      );
       box-shadow: -4px 0 20px rgba(0, 0, 0, 0.4);
     }
   }
@@ -385,7 +422,11 @@ body {
   }
 
   .nav-link.router-link-exact-active {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+    background: linear-gradient(
+      135deg,
+      rgba(99, 102, 241, 0.2),
+      rgba(139, 92, 246, 0.2)
+    );
     border-color: rgba(99, 102, 241, 0.4);
     color: #6366f1;
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
@@ -393,7 +434,11 @@ body {
 
   @media (prefers-color-scheme: dark) {
     .nav-link.router-link-exact-active {
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3));
+      background: linear-gradient(
+        135deg,
+        rgba(99, 102, 241, 0.3),
+        rgba(139, 92, 246, 0.3)
+      );
       box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
   }
