@@ -1,0 +1,29 @@
+@import './base.css';
+
+#app {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-weight: normal;
+}
+
+/* 全局链接样式 */
+a {
+  color: var(--vt-c-primary-500);
+  text-decoration: none;
+  transition: all var(--transition-base);
+  font-weight: 500;
+}
+
+a:hover {
+  color: var(--vt-c-primary-600);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (prefers-color-scheme: dark) {
+  a:hover {
+    color: var(--vt-c-primary-400);
+  }
+}
