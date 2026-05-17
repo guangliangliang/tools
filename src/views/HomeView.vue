@@ -57,22 +57,34 @@ const router = useRouter()
 
 const tools = [
   {
-    name: 'JSON 格式化',
-    icon: '📋',
-    description: '格式化、压缩 JSON 数据，支持语法高亮和错误提示',
-    path: '/json-format'
+    name: "JSON 格式化",
+    icon: "📋",
+    description: "格式化、压缩 JSON 数据，支持语法高亮和错误提示",
+    path: "/json-format"
   },
   {
-    name: 'JSON 对比',
-    icon: '🔀',
-    description: '对比两个 JSON 文件的差异，直观展示变化内容',
-    path: '/json-diff'
+    name: "JSON 对比",
+    icon: "🔀",
+    description: "对比两个 JSON 文件的差异，直观展示变化内容",
+    path: "/json-diff"
   },
   {
-    name: 'Markdown 编辑',
-    icon: '📝',
-    description: '实时预览的 Markdown 编辑器，支持语法高亮',
-    path: '/markdown-editor'
+    name: "Markdown 编辑",
+    icon: "📝",
+    description: "实时预览的 Markdown 编辑器，支持语法高亮",
+    path: "/markdown-editor"
+  },
+  {
+    name: "SQL 转换器",
+    icon: "🔄",
+    description: "支持 MySQL、PostgreSQL、Oracle 三大主流数据库之间的 SQL 语法转换",
+    path: "/sql-converter"
+  },
+  {
+    name: "SQL → 实体类",
+    icon: "📊",
+    description: "从 CREATE TABLE 或 SELECT 语句生成 Java、Python、C#、Go 实体类",
+    path: "/sql-to-entity"
   }
 ]
 

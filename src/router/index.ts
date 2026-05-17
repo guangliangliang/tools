@@ -24,6 +24,16 @@ const router = createRouter({
       name: 'markdown-editor',
       component: () => import('../views/MarkdownEditorView.vue'),
     },
+    {
+      path: '/sql-converter',
+      name: 'sql-converter',
+      component: () => import('../views/SqlConverterView.vue'),
+    },
+    {
+      path: '/sql-to-entity',
+      name: 'sql-to-entity',
+      component: () => import('../views/SqlToEntityView.vue'),
+    },
   ],
 })
 
