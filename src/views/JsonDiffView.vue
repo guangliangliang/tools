@@ -4,70 +4,27 @@
       <div class="header-content">
         <h1 class="page-title">
           <span class="title-icon">🔀</span>
-          JSON 对比
+          JSON 对比工具
         </h1>
-        <p class="page-desc">对比两个 JSON 文件的差异，直观展示变化内容</p>
       </div>
     </div>
 
-    <div class="toolbar">
-      <div class="toolbar-group">
-        <button @click="compareJson" class="btn btn-primary">
-          <span class="btn-icon">🔍</span>
-          <span class="btn-text">开始对比</span>
-        </button>
-        <button @click="swapJson" class="btn btn-info">
-          <span class="btn-icon">🔄</span>
-          <span class="btn-text">交换位置</span>
-        </button>
-      </div>
-      <div class="toolbar-group">
-        <button @click="loadTestData" class="btn btn-warning">
-          <span class="btn-icon">📥</span>
-          <span class="btn-text">测试数据</span>
-        </button>
-        <button @click="clearAll" class="btn btn-ghost">
-          <span class="btn-icon">🗑️</span>
-          <span class="btn-text">清空</span>
+    <div class="tabs-container">
+      <div class="tabs">
+        <button 
+          v-for="(example, idx) in examples" 
+          :key="idx"
+          class="tab-item" 
+          :class="{ active: currentExample === idx }"
+          @click="loadExample(idx)"
+        >
+          {{ example.name }}
         </button>
       </div>
-    </div>
-
-    <div class="input-container">
-      <div class="editor-panel">
-        <div class="panel-header">
-          <div class="header-left">
-            <span class="header-badge badge-1">1</span>
-            <span>原始 JSON</span>
-          </div>
-          <span class="char-count">{{ input1Length }} 字符</span>
-        </div>
-        <textarea
-          v-model="inputJson1"
-          placeholder="请粘贴第一个 JSON 内容..."
-          class="editor-input"
-          spellcheck="false"
-        ></textarea>
-      </div>
-
-      <div class="compare-divider">
-        <span class="vs-badge">VS</span>
-      </div>
-
-      <div class="editor-panel">
-        <div class="panel-header">
-          <div class="header-left">
-            <span class="header-badge badge-2">2</span>
-            <span>对比 JSON</span>
-          </div>
-          <span class="char-count">{{ input2Length }} 字符</span>
-        </div>
-        <textarea
-          v-model="inputJson2"
-          placeholder="请粘贴第二个 JSON 内容..."
-          class="editor-input"
-          spellcheck="false"
-        ></textarea>
+      <div class="status-info" v-if="hasCompared">
+        <span class="status-icon" v-if="diffCount > 0">Tips:</span>
+        <span class="status-text" v-if="diffCount > 0">两侧JSON比对完成！共有 {{ diffCount }} 处不一致！</span>
+        <span class="status-text" v-else>两侧JSON完全一致！</span>
       </div>
     </div>
 
@@ -79,111 +36,321 @@
       </div>
     </transition>
 
-    <transition name="fade">
-      <div v-if="hasCompared && !diffResult" class="result-box result-same">
-        <div class="result-icon">✅</div>
-        <h3>完全一致</h3>
-        <p>两个 JSON 内容完全相同</p>
-      </div>
-    </transition>
-
-    <transition name="fade">
-      <div v-if="diffResult" class="result-container">
-        <div class="result-header">
-          <h3 class="result-title">📊 对比结果</h3>
-          <div class="legend">
-            <span class="legend-item legend-added">
-              <span class="legend-dot"></span>
-              新增
-            </span>
-            <span class="legend-item legend-removed">
-              <span class="legend-dot"></span>
-              删除
-            </span>
-            <span class="legend-item legend-unchanged">
-              <span class="legend-dot"></span>
-              不变
-            </span>
+    <div class="diff-container">
+      <div class="diff-panel">
+        <div class="diff-editor">
+          <div class="line-numbers">
+            <span v-for="n in lines1.length" :key="`l1-${n}`">{{ n }}</span>
+          </div>
+          <div class="code-content">
+            <div 
+              v-for="(line, idx) in lines1" 
+              :key="`line1-${idx}`" 
+              class="code-line"
+              :class="getLineClass1(idx)"
+            >
+              <span v-html="renderLine(line, 1, idx)"></span>
+            </div>
           </div>
         </div>
-        <div class="diff-content" v-html="diffResult"></div>
       </div>
-    </transition>
+
+      <div class="diff-panel">
+        <div class="diff-editor">
+          <div class="line-numbers">
+            <span v-for="n in lines2.length" :key="`l2-${n}`">{{ n }}</span>
+          </div>
+          <div class="code-content">
+            <div 
+              v-for="(line, idx) in lines2" 
+              :key="`line2-${idx}`" 
+              class="code-line"
+              :class="getLineClass2(idx)"
+            >
+              <span v-html="renderLine(line, 2, idx)"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar-bottom">
+      <div class="toolbar-group">
+        <button @click="showInputModal = true" class="btn btn-secondary">
+          <span class="btn-icon">✏️</span>
+          <span class="btn-text">编辑 JSON</span>
+        </button>
+        <button @click="compareJson" class="btn btn-primary">
+          <span class="btn-icon">🔍</span>
+          <span class="btn-text">开始对比</span>
+        </button>
+        <button @click="swapJson" class="btn btn-info">
+          <span class="btn-icon">🔄</span>
+          <span class="btn-text">交换位置</span>
+        </button>
+      </div>
+      <div class="toolbar-group">
+        <button @click="clearAll" class="btn btn-ghost">
+          <span class="btn-icon">🗑️</span>
+          <span class="btn-text">清空</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="input-modal" v-if="showInputModal">
+      <div class="modal-overlay" @click="showInputModal = false"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>编辑 JSON</h3>
+          <button class="btn-close" @click="showInputModal = false">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-input-group">
+            <label>左侧 JSON</label>
+            <textarea
+              v-model="inputJson1"
+              class="modal-textarea"
+              spellcheck="false"
+            ></textarea>
+          </div>
+          <div class="modal-input-group">
+            <label>右侧 JSON</label>
+            <textarea
+              v-model="inputJson2"
+              class="modal-textarea"
+              spellcheck="false"
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" @click="showInputModal = false">取消</button>
+          <button class="btn btn-primary" @click="applyAndClose">确定</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
 const inputJson1 = ref('')
 const inputJson2 = ref('')
 const errorMessage = ref('')
-const diffResult = ref('')
 const hasCompared = ref(false)
+const showInputModal = ref(false)
+const currentExample = ref(0)
 
-const input1Length = computed(() => inputJson1.value.length)
-const input2Length = computed(() => inputJson2.value.length)
+const diffMapping = ref<{[key: number]: {side1: 'removed' | 'unchanged', side2: 'added' | 'unchanged'}}>({})
+const charDiffs = ref<{[key: string]: number[]}>({})
+
+const lines1 = ref<string[]>([])
+const lines2 = ref<string[]>([])
+
+const examples = [
+  {
+    name: '示例数据',
+    json1: {
+      "id": 1001,
+      "name": "张三",
+      "age": 28,
+      "email": "zhangsan@example.com",
+      "address": {
+        "city": "北京",
+        "district": "朝阳区",
+        "street": "建国路88号"
+      },
+      "tags": ["前端", "JavaScript", "Vue"],
+      "isActive": true,
+      "lastLogin": "2024-01-15T08:00:00"
+    },
+    json2: {
+      "id": 1001,
+      "name": "张三",
+      "age": 30,
+      "email": "zhangsan@example.com",
+      "address": {
+        "city": "上海",
+        "district": "浦东新区",
+        "street": "建国路88号"
+      },
+      "tags": ["前端", "JavaScript", "React"],
+      "isActive": true,
+      "lastLogin": "2024-02-20T10:45:00"
+    }
+  },
+  {
+    name: '用户信息',
+    json1: { "name": "李四", "role": "user" },
+    json2: { "name": "李四", "role": "admin" }
+  },
+  {
+    name: '商品数据',
+    json1: { "product": "手机", "price": 2999 },
+    json2: { "product": "手机", "price": 2799 }
+  },
+  {
+    name: '配置选项',
+    json1: { "theme": "light", "font": "14px" },
+    json2: { "theme": "dark", "font": "16px" }
+  },
+  {
+    name: 'API响应',
+    json1: { "code": 200, "msg": "success" },
+    json2: { "code": 500, "msg": "error" }
+  }
+]
+
+const diffCount = computed(() => {
+  let count = 0
+  for (const key in diffMapping.value) {
+    if (diffMapping.value[key].side1 !== 'unchanged' || diffMapping.value[key].side2 !== 'unchanged') {
+      count++
+    }
+  }
+  return count
+})
+
+const loadExample = (index: number) => {
+  currentExample.value = index
+  const example = examples[index]
+  inputJson1.value = JSON.stringify(example.json1, null, 2)
+  inputJson2.value = JSON.stringify(example.json2, null, 2)
+  compareJson()
+}
 
 const compareJson = () => {
   errorMessage.value = ''
-  diffResult.value = ''
   hasCompared.value = false
+  diffMapping.value = {}
+  charDiffs.value = {}
 
-  if (!inputJson1.value.trim() || !inputJson2.value.trim()) {
-    errorMessage.value = '请输入两个 JSON 内容'
+  if (!inputJson1.value.trim() && !inputJson2.value.trim()) {
     return
   }
 
   let obj1: any, obj2: any
   try {
-    obj1 = JSON.parse(inputJson1.value)
+    if (inputJson1.value.trim()) {
+      obj1 = JSON.parse(inputJson1.value)
+    }
   } catch (e) {
-    errorMessage.value = `JSON 1 格式错误：${(e as Error).message}`
+    errorMessage.value = `左侧 JSON 格式错误：${(e as Error).message}`
     return
   }
 
   try {
-    obj2 = JSON.parse(inputJson2.value)
+    if (inputJson2.value.trim()) {
+      obj2 = JSON.parse(inputJson2.value)
+    }
   } catch (e) {
-    errorMessage.value = `JSON 2 格式错误：${(e as Error).message}`
+    errorMessage.value = `右侧 JSON 格式错误：${(e as Error).message}`
     return
   }
 
-  const str1 = JSON.stringify(obj1, null, 2)
-  const str2 = JSON.stringify(obj2, null, 2)
+  const str1 = inputJson1.value.trim() ? JSON.stringify(obj1, null, 2) : ''
+  const str2 = inputJson2.value.trim() ? JSON.stringify(obj2, null, 2) : ''
 
-  if (str1 === str2) {
-    hasCompared.value = true
-    return
-  }
+  lines1.value = str1.split('\n')
+  lines2.value = str2.split('\n')
 
-  diffResult.value = generateDiff(str1, str2)
+  generateDiff(lines1.value, lines2.value)
+  hasCompared.value = true
 }
 
-const generateDiff = (str1: string, str2: string): string => {
-  const lines1 = str1.split('\n')
-  const lines2 = str2.split('\n')
-  const result: string[] = []
-
-  const maxLen = Math.max(lines1.length, lines2.length)
-
+const generateDiff = (linesA: string[], linesB: string[]) => {
+  const maxLen = Math.max(linesA.length, linesB.length)
+  
   for (let i = 0; i < maxLen; i++) {
-    const line1 = lines1[i] ?? ''
-    const line2 = lines2[i] ?? ''
-
-    if (lines1[i] === undefined) {
-      result.push(`<div class="diff-line added"><span class="diff-marker">+</span><span class="diff-text">${escapeHtml(line2)}</span></div>`)
-    } else if (lines2[i] === undefined) {
-      result.push(`<div class="diff-line removed"><span class="diff-marker">-</span><span class="diff-text">${escapeHtml(line1)}</span></div>`)
-    } else if (line1 !== line2) {
-      result.push(`<div class="diff-line removed"><span class="diff-marker">-</span><span class="diff-text">${escapeHtml(line1)}</span></div>`)
-      result.push(`<div class="diff-line added"><span class="diff-marker">+</span><span class="diff-text">${escapeHtml(line2)}</span></div>`)
+    const lineA = linesA[i] || ''
+    const lineB = linesB[i] || ''
+    
+    if (!linesA[i]) {
+      diffMapping.value[i] = { side1: 'unchanged', side2: 'added' }
+    } else if (!linesB[i]) {
+      diffMapping.value[i] = { side1: 'removed', side2: 'unchanged' }
+    } else if (lineA !== lineB) {
+      diffMapping.value[i] = { side1: 'removed', side2: 'added' }
+      computeCharDiffs(lineA, lineB, i)
     } else {
-      result.push(`<div class="diff-line unchanged"><span class="diff-marker"> </span><span class="diff-text">${escapeHtml(line1)}</span></div>`)
+      diffMapping.value[i] = { side1: 'unchanged', side2: 'unchanged' }
     }
   }
+}
 
-  return result.join('')
+const computeCharDiffs = (lineA: string, lineB: string, idx: number) => {
+  const diffsA: number[] = []
+  const diffsB: number[] = []
+  
+  const minLen = Math.min(lineA.length, lineB.length)
+  
+  for (let i = 0; i < minLen; i++) {
+    if (lineA[i] !== lineB[i]) {
+      diffsA.push(i)
+      diffsB.push(i)
+    }
+  }
+  
+  if (lineA.length > lineB.length) {
+    for (let i = lineB.length; i < lineA.length; i++) {
+      diffsA.push(i)
+    }
+  }
+  
+  if (lineB.length > lineA.length) {
+    for (let i = lineA.length; i < lineB.length; i++) {
+      diffsB.push(i)
+    }
+  }
+  
+  charDiffs.value[`1-${idx}`] = diffsA
+  charDiffs.value[`2-${idx}`] = diffsB
+}
+
+const getLineClass1 = (idx: number) => {
+  if (!diffMapping.value[idx]) return ''
+  return `line-${diffMapping.value[idx].side1}`
+}
+
+const getLineClass2 = (idx: number) => {
+  if (!diffMapping.value[idx]) return ''
+  return `line-${diffMapping.value[idx].side2}`
+}
+
+const renderLine = (line: string, side: number, idx: number) => {
+  const key = `${side}-${idx}`
+  const diffIndices = charDiffs.value[key]
+  
+  if (!diffIndices || diffIndices.length === 0) {
+    return escapeHtml(line)
+  }
+  
+  let result = ''
+  let inDiff = false
+  let currentPart = ''
+  
+  for (let i = 0; i < line.length; i++) {
+    const isDiff = diffIndices.includes(i)
+    
+    if (isDiff !== inDiff) {
+      if (currentPart) {
+        result += inDiff 
+          ? `<span class="highlight-diff">${escapeHtml(currentPart)}</span>` 
+          : escapeHtml(currentPart)
+        currentPart = ''
+      }
+      inDiff = isDiff
+    }
+    currentPart += line[i]
+  }
+  
+  if (currentPart) {
+    result += inDiff 
+      ? `<span class="highlight-diff">${escapeHtml(currentPart)}</span>` 
+      : escapeHtml(currentPart)
+  }
+  
+  return result
 }
 
 const escapeHtml = (text: string): string => {
@@ -196,66 +363,31 @@ const swapJson = () => {
   const temp = inputJson1.value
   inputJson1.value = inputJson2.value
   inputJson2.value = temp
-  diffResult.value = ''
-  hasCompared.value = false
+  
+  if (hasCompared.value) {
+    compareJson()
+  }
 }
 
 const clearAll = () => {
   inputJson1.value = ''
   inputJson2.value = ''
   errorMessage.value = ''
-  diffResult.value = ''
   hasCompared.value = false
+  lines1.value = []
+  lines2.value = []
+  diffMapping.value = {}
+  charDiffs.value = {}
 }
 
-const loadTestData = () => {
-  // 原始 JSON - 版本 1
-  const jsonData1 = {
-    name: "开发者工具集",
-    version: "1.0.0",
-    description: "提升开发效率的在线工具集合",
-    author: {
-      name: "Developer",
-      email: "dev@example.com"
-    },
-    features: [
-      "JSON 格式化",
-      "JSON 对比"
-    ],
-    config: {
-      theme: "light",
-      language: "zh-CN"
-    }
-  }
-  
-  // 对比 JSON - 版本 2（有一些差异）
-  const jsonData2 = {
-    name: "开发者工具集 Pro",
-    version: "2.0.0",
-    description: "提升开发效率的在线工具集合 - 专业版",
-    author: {
-      name: "Developer Team",
-      email: "team@example.com",
-      website: "https://example.com"
-    },
-    features: [
-      "JSON 格式化",
-      "JSON 对比",
-      "Markdown 编辑器",
-      "代码高亮"
-    ],
-    config: {
-      theme: "dark",
-      language: "zh-CN",
-      autoSave: true
-    },
-    createdAt: "2024-01-15T08:00:00.000Z"
-  }
-  
-  inputJson1.value = JSON.stringify(jsonData1, null, 2)
-  inputJson2.value = JSON.stringify(jsonData2, null, 2)
-  errorMessage.value = '已加载测试数据，点击"开始对比"查看差异'
+const applyAndClose = () => {
+  showInputModal.value = false
+  compareJson()
 }
+
+onMounted(() => {
+  loadExample(0)
+})
 </script>
 
 <style scoped>
@@ -264,10 +396,462 @@ const loadTestData = () => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 1.5rem;
-  gap: 1rem;
-  max-width: 1800px;
-  margin: 0 auto;
+  background: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.page-header {
+  flex-shrink: 0;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+}
+
+.header-content {
+  padding: 12px 20px;
+}
+
+.page-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title-icon {
+  font-size: 20px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-link {
+  background: transparent;
+  color: #4b5563;
+}
+
+.btn-link:hover {
+  color: #1f2937;
+}
+
+.btn-primary-outline {
+  background: transparent;
+  color: #3b82f6;
+  border: 1px solid #3b82f6;
+}
+
+.btn-primary-outline:hover {
+  background: #eff6ff;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+.btn-info {
+  background: #06b6d4;
+  color: #ffffff;
+}
+
+.btn-info:hover {
+  background: #0891b2;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: #6b7280;
+}
+
+.btn-ghost:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.badge {
+  background: #3b82f6;
+  color: white;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.tabs-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.tab-item {
+  padding: 6px 12px;
+  border: none;
+  background: transparent;
+  color: #4b5563;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.tab-item:hover {
+  background: #f3f4f6;
+}
+
+.tab-item.active {
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 500;
+}
+
+.status-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.status-icon {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.status-text {
+  color: #4b5563;
+}
+
+.message {
+  margin: 12px 20px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.message-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+}
+
+.message-icon {
+  font-size: 16px;
+}
+
+.message-text {
+  flex: 1;
+}
+
+.message-close {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  opacity: 0.6;
+  padding: 0;
+  line-height: 1;
+  color: #dc2626;
+}
+
+.message-close:hover {
+  opacity: 1;
+}
+
+.diff-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.diff-panel {
+  border-right: 1px solid #e5e7eb;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.diff-panel:last-child {
+  border-right: none;
+}
+
+.diff-editor {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.line-numbers {
+  background: #f9fafb;
+  padding: 12px 8px;
+  border-right: 1px solid #e5e7eb;
+  text-align: right;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #9ca3af;
+  user-select: none;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.line-numbers span {
+  display: block;
+  height: 20.8px;
+}
+
+.code-content {
+  flex: 1;
+  padding: 12px 16px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow: auto;
+}
+
+.code-line {
+  white-space: pre;
+  min-height: 20.8px;
+  padding: 0 4px;
+  margin: 0 -4px;
+  border-radius: 2px;
+}
+
+.code-line.line-removed {
+  background: #fee2e2;
+}
+
+.code-line.line-added {
+  background: #dcfce7;
+}
+
+.code-line.line-unchanged {
+  background: transparent;
+}
+
+.highlight-diff {
+  background: #fef08a;
+  border-radius: 2px;
+}
+
+.toolbar-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.toolbar-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.input-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  position: relative;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 90%;
+  max-width: 900px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.btn-close {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0;
+  line-height: 1;
+}
+
+.btn-close:hover {
+  color: #374151;
+}
+
+.modal-body {
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  overflow: auto;
+  flex: 1;
+}
+
+.modal-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modal-input-group label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.modal-textarea {
+  flex: 1;
+  min-height: 200px;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+}
+
+.modal-textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+@media (max-width: 768px) {
+  .header-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .tabs-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .diff-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .diff-panel {
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .modal-body {
+    grid-template-columns: 1fr;
+  }
+  
+  .toolbar-bottom {
+    flex-direction: column;
+  }
+  
+  .toolbar-group {
+    justify-content: center;
+    width: 100%;
+  }
 }
 
 @media (min-width: 1200px) {

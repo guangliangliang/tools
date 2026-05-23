@@ -6,19 +6,12 @@
           <span class="title-icon">📊</span>
           SQL → 实体类生成器
         </h1>
-        <p class="page-desc">支持从 CREATE TABLE 或 SELECT 语句生成 Java、Python、C#、Go 实体类</p>
+        <p class="page-desc">支持从 CREATE TABLE 语句生成 Java、Python、C#、Go 实体类</p>
       </div>
     </div>
 
     <div class="toolbar">
       <div class="toolbar-group">
-        <div class="db-selector">
-          <label>输入模式</label>
-          <select v-model="inputMode" @change="loadSample">
-            <option :value="InputMode.CREATE_TABLE">CREATE TABLE</option>
-            <option :value="InputMode.SELECT">SELECT 语句</option>
-          </select>
-        </div>
         <div class="db-selector">
           <label>数据库</label>
           <select v-model="databaseType" @change="loadSample">
@@ -105,7 +98,6 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import * as monaco from 'monaco-editor'
 import { 
   DatabaseType, 
-  InputMode, 
   parseSql, 
   getSampleSql 
 } from '../utils/sqlParser'
@@ -115,7 +107,6 @@ import {
   generateCode 
 } from '../utils/codeGenerator'
 
-const inputMode = ref<InputMode>(InputMode.CREATE_TABLE)
 const databaseType = ref<DatabaseType>(DatabaseType.MYSQL)
 const language = ref<Language>(Language.JAVA)
 const inputSql = ref('')
@@ -156,7 +147,7 @@ const generate = () => {
   }
 
   try {
-    const parsed = parseSql(value, databaseType.value, inputMode.value)
+    const parsed = parseSql(value, databaseType.value)
     const opts = {
       ...options.value,
       language: language.value
@@ -204,7 +195,7 @@ const clearAll = () => {
 }
 
 const loadSample = () => {
-  const sample = getSampleSql(inputMode.value, databaseType.value)
+  const sample = getSampleSql(databaseType.value)
   inputSql.value = sample
   if (inputEditor) {
     inputEditor.setValue(sample)

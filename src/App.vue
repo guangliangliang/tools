@@ -49,6 +49,14 @@ const closeMenu = () => {
             <span class="nav-link-icon">📝</span>
             <span>Markdown</span>
           </RouterLink>
+          <RouterLink to="/sql-converter" class="nav-link" @click="closeMenu">
+            <span class="nav-link-icon">🔄</span>
+            <span>SQL 转换器</span>
+          </RouterLink>
+          <RouterLink to="/sql-to-entity" class="nav-link" @click="closeMenu">
+            <span class="nav-link-icon">📊</span>
+            <span>SQL → 实体类</span>
+          </RouterLink>
         </div>
       </div>
     </nav>
@@ -108,8 +116,9 @@ body {
 }
 
 .navbar {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
+  background: #ffffff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   border-bottom: 1px solid rgba(148, 163, 184, 0.2);
   position: sticky;
   top: 0;
@@ -121,7 +130,7 @@ body {
 
 @media (prefers-color-scheme: dark) {
   .navbar {
-    background: rgba(30, 41, 59, 0.95);
+    background: #1e293b;
     border-bottom: 1px solid rgba(148, 163, 184, 0.1);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
@@ -360,12 +369,9 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.98) 0%,
-      rgba(248, 250, 252, 0.98) 100%
-    );
-    backdrop-filter: blur(20px);
+    background: #ffffff;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     flex-direction: column;
     align-items: stretch;
     padding: 2rem 1.5rem;
@@ -378,11 +384,7 @@ body {
 
   @media (prefers-color-scheme: dark) {
     .nav-links {
-      background: linear-gradient(
-        180deg,
-        rgba(30, 41, 59, 0.98) 0%,
-        rgba(15, 23, 42, 0.98) 100%
-      );
+      background: #0f172a;
       box-shadow: -4px 0 20px rgba(0, 0, 0, 0.4);
     }
   }
@@ -396,7 +398,7 @@ body {
     padding: 1.25rem 1.5rem;
     font-size: 1.05rem;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.6);
+    background: #f1f5f9;
     border: 1px solid rgba(148, 163, 184, 0.2);
     font-weight: 600;
     display: flex;
@@ -411,7 +413,7 @@ body {
 
   @media (prefers-color-scheme: dark) {
     .nav-link {
-      background: rgba(51, 65, 85, 0.5);
+      background: #1e293b;
       border: 1px solid rgba(148, 163, 184, 0.1);
     }
   }
